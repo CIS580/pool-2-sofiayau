@@ -19,17 +19,22 @@ var pockets = [
   {x: 1024, y: 512}
 ]
 var stick = {x: 0, y: 0, power: 0, charge: false}
-var balls = []
-for(var i = 0; i < 18; i++){
+var balls = [];
+var axisList = [];
+for(var i = 0; i < 16; i++){
   balls.push({
+    number : i,
     position: {x: 0, y: 0},
     angle: 0,
     velocity: {x:0, y:0},
     color: 'gray',
     pocketed: false
   });
+  axisList.push(balls[i]);
 }
+axisList.sort(function(a,b){return a.position.x - b.position.x ;});
 rack();
+console.log(balls);
 
 /**
  * Helper function to rack the balls
@@ -175,6 +180,34 @@ function update(elapsedTime) {
   });
 
   // check for ball collisions
+axisList.sort(function(a,b){return a.position.x - b.position.x;});
+  //first pass
+  var active = [];
+  var potentiallyColliding = [];
+  axisList.forEach(function(ball,aindex){
+    //remove balls we've passed
+    active = active.filter(function(oball){
+      return oball.position.x - ball.position.x < 30;
+    });
+    active.forEach(function(oball,bindex){
+      potentiallyColliding.push({a:oball, b:ball});
+    });
+    active.push(ball);
+  });
+  //second pass - check for REAL collisions
+  var collisions = [];
+  potentiallyColliding.forEach(function(pair){
+    if(
+      Math.pow(pair.a.position.x - pair.b.position.x, 2) +
+      Math.pow(pair.a.position.y - pair.b.position.y, 2) <
+      15*15
+    ){
+    pair.a.color = 'red';
+    pair.b.color = 'green';
+    collisions.push(pair);
+  }
+
+  });
   // TODO: Check for ball collisions
   // TODO: Process ball collisions
 }
